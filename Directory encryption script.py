@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 op_val = 0
 dir_val = ""
 passw_val = ""
-nuevo_dir = ""
+dir_val + " (decrypted)" = ""
 
 while True:
     # Opciones en pantalla
@@ -28,32 +28,43 @@ while True:
             passw_val = input("Enter password: ").encode()
 
             # Derivar la clave a partir de la contraseña
-            kdf_val = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, iterations=100000, salt=b'salt')
+            kdf_val = PBKDF2HMAC(algorithm = hashes.SHA256(), length=32, iterations = 100000, salt = b'salt')
             clave_val = kdf_val.derive(passw_val)
 
             # Copiar nuevo directorio conservando el nombre + "(encrypted)"
-            nuevo_dir = dir_val + " (encrypted)"
-            os.mkdir(nuevo_dir)
+            dir_val + " (decrypted)" = dir_val + " (encrypted)"
+            os.mkdir(dir_val + " (decrypted)")
 
             # Iterar recursivamente nuevo directorio encriptando cada archivo usando la contraseña
             for dir_act, subdirs_iter, archs_iter in os.walk(dir_val):
                 for arch_it in archs_iter:
+                    # Directorio del archivo
                     arch_dir = os.path.join(dir_act, arch_it)
                     
+                    # Lectura de archivo
                     with open(arch_dir, "rb") as arch_rd:
                         arch_tmp = arch_rd.read()
                     
                     # Encriptar el archivo
+                    # Generar un vector de inicialización (IV) aleatorio
                     iv_val = os.urandom(16)
+                    # Se crea un objeto Cipher utilizando el algoritmo AES
                     cipher_val = Cipher(algorithms.AES(clave_val), modes.CBC(iv_val))
+                    # Se crea un objeto Encryptor a partir del objeto Cipher
                     encryptor_val = cipher_val.encryptor()
-                    padder = padding.PKCS7(128).padder()
-                    padded_data = padder.update(arch_tmp) + padder.finalize()
-                    encrypted_data = encryptor_val.update(padded_data) + encryptor_val.finalize()
-                    nuevo_arch = os.path.join(nuevo_dir, os.path.relpath(arch_dir, dir_val))
                     
-                    # Crear directorios si no existen
-                    os.makedirs(os.path.dirname(nuevo_arch), exist_ok=True)
+                    # Se crea un objeto Padder para agregar relleno a los datos utilizando el algoritmo PKCS#7
+                    padder_val = padding.PKCS7(128).padder()
+                    # Se agrega relleno a los datos del archivo utilizando el objeto Padder
+                    padded_data = padder_val.update(arch_tmp) + padder_val.finalize()
+                    
+                    # Se encriptan los datos con relleno utilizando el objeto Encryptor
+                    encrypted_data = encryptor_val.update(padded_data) + encryptor_val.finalize()
+                    
+                    # Crear la ruta del archivo encriptado
+                    nuevo_arch = os.path.join(dir_val + " (decrypted)", os.path.relpath(arch_dir, dir_val))
+                    # Crear el directorio si no existe
+                    os.makedirs(os.path.dirname(nuevo_arch), exist_ok = True)
                     
                     # Escribir archivo encriptado
                     with open(nuevo_arch, "wb") as arch_rd:
@@ -75,33 +86,43 @@ while True:
             passw_val = input("Enter password: ").encode()
 
             # Derivar la clave a partir de la contraseña
-            kdf_val = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, iterations=100000, salt=b'salt')
+            kdf_val = PBKDF2HMAC(algorithm = hashes.SHA256(), length = 32, iterations = 100000, salt = b'salt')
             clave_val = kdf_val.derive(passw_val)
 
             # Copiar nuevo directorio conservando el nombre + "(decrypted)"
-            nuevo_dir = dir_val + " (decrypted)"
-            os.mkdir(nuevo_dir)
+            os.mkdir(dir_val + " (decrypted)")
 
             # Iterar recursivamente nuevo directorio desencriptando cada archivo usando la contraseña
             for dir_act, subdirs_iter, archs_iter in os.walk(dir_val):
                 for arch_it in archs_iter:
+                    # Directorio del archivo
                     arch_dir = os.path.join(dir_act, arch_it)
                     
+                    # Lectura del archivo
                     with open(arch_dir, "rb") as arch_rd:
                         encrypted_data = arch_rd.read()
                     
                     # Desencriptar el archivo
+                    #  Se extraen los primeros 16 bytes del archivo encriptado, que corresponden al vector de inicialización (IV)
                     iv_val = encrypted_data[:16]
+                    # Se extraen los datos encriptados restantes
                     encrypted_data = encrypted_data[16:]
-                    cipher = Cipher(algorithms.AES(clave_val), modes.CBC(iv_val))
-                    decryptor = cipher.decryptor()
-                    decrypted_padded_data = decryptor.update(encrypted_data) + decryptor.finalize()
-                    unpadder = padding.PKCS7(128).unpadder()
-                    arch_tmp = unpadder.update(decrypted_padded_data) + unpadder.finalize()
-                    nuevo_arch = os.path.join(nuevo_dir, os.path.relpath(arch_dir, dir_val))
+                    # Se crea un objeto Cipher utilizando el algoritmo AES, el modo CBC (Cipher Block Chaining) y el IV extraído
+                    cipher_val = Cipher(algorithms.AES(clave_val), modes.CBC(iv_val))
+                    # Se crea un objeto Decryptor a partir del objeto Cipher
+                    decryptor_val = cipher_val.decryptor()
+                    # Se desencriptan los datos utilizando el objeto Decryptor. El método update() desencripta los datos proporcionados, y el método finalize() se utiliza para procesar cualquier bloque restante
+                    decrypted_padded_data = decryptor_val.update(encrypted_data) + decryptor_val.finalize()
                     
-                    # Crear directorios si no existen
-                    os.makedirs(os.path.dirname(nuevo_arch), exist_ok=True)
+                    # Se crea un objeto Unpadder para eliminar el relleno (padding) utilizado durante la encriptación
+                    unpadder_val = padding.PKCS7(128).unpadder()
+                    # Se elimina el relleno de los datos desencriptados utilizando el objeto Unpadder
+                    arch_tmp = unpadder_val.update(decrypted_padded_data) + unpadder_val.finalize()
+                    
+                    # Crear la ruta del archivo encriptado
+                    nuevo_arch = os.path.join(dir_val + " (decrypted)", os.path.relpath(arch_dir, dir_val))
+                    # Crear el directorio si no existe
+                    os.makedirs(os.path.dirname(nuevo_arch), exist_ok = True)
                     
                     # Escribir archivo desencriptado
                     with open(nuevo_arch, "wb") as arch_rd:
