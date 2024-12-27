@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 op_val = 0
 dir_val = ""
 passw_val = ""
-dir_val + " (decrypted)" = ""
+dir_val = ""
 
 while True:
     # Opciones en pantalla
@@ -32,7 +32,6 @@ while True:
             clave_val = kdf_val.derive(passw_val)
 
             # Copiar nuevo directorio conservando el nombre + "(encrypted)"
-            dir_val + " (decrypted)" = dir_val + " (encrypted)"
             os.mkdir(dir_val + " (decrypted)")
 
             # Iterar recursivamente nuevo directorio encriptando cada archivo usando la contraseña
