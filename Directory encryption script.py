@@ -30,9 +30,9 @@ while True:
             # Derivar la clave a partir de la contraseña
             kdf_val = PBKDF2HMAC(algorithm = hashes.SHA256(), length=32, iterations = 100000, salt = b'salt')
             clave_val = kdf_val.derive(passw_val)
-
+            
             # Copiar nuevo directorio conservando el nombre + "(encrypted)"
-            os.mkdir(dir_val + " (decrypted)")
+            os.mkdir(dir_val + " (encrypted)")
 
             # Iterar recursivamente nuevo directorio encriptando cada archivo usando la contraseña
             for dir_act, subdirs_iter, archs_iter in os.walk(dir_val):
@@ -61,7 +61,7 @@ while True:
                     encrypted_data = encryptor_val.update(padded_data) + encryptor_val.finalize()
                     
                     # Crear la ruta del archivo encriptado
-                    nuevo_arch = os.path.join(dir_val + " (decrypted)", os.path.relpath(arch_dir, dir_val))
+                    nuevo_arch = os.path.join(dir_val + " (encrypted)", os.path.relpath(arch_dir, dir_val))
                     # Crear el directorio si no existe
                     os.makedirs(os.path.dirname(nuevo_arch), exist_ok = True)
                     
