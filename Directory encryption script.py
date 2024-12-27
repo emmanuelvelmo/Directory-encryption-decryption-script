@@ -85,7 +85,7 @@ while True:
             passw_val = input("Enter password: ").encode()
 
             # Derivar la clave a partir de la contraseña
-            kdf_val = PBKDF2HMAC(algorithm = hashes.SHA256(), length = 32, iterations = 100000, salt = b'salt')
+            kdf_val = PBKDF2HMAC(algorithm = hashes.SHA256(), length = 32, iterations = 100000, salt = b'XXXXXXXXXXXXXXXX')
             clave_val = kdf_val.derive(passw_val)
 
             # Copiar nuevo directorio conservando el nombre + "(decrypted)"
