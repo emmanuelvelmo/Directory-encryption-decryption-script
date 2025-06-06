@@ -1,4 +1,6 @@
 # Directory encryption script
+-
+
 <p align="left">
   <strong>-</strong>
   <br/>
